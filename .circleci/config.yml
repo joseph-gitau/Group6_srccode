@@ -1,29 +1,25 @@
 version: 2.1
-orbs:
-  win:
 
-
-executors:
-  openjdk11:
+jobs:
+  build:
+    working_directory: ~/Group6_srccode
     docker:
-      - image: cimg/openjdk:11.0
-      - image: cimg/postgres:14.1
-        environment:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: cfd
+      - image: "circleci/Group6_srccode"
+    steps:
+      - checkout
+      - run: Group6_srccode\Group6_srccode\src\atm_fingerprint\ && javac ATMmain.java && java ATMmain
+  test:
+    working_directory: ~/Group6_srccode
+    docker:
+      - image: "circleci/Group6_srccode"
+    steps:
+      - checkout
+      - run: Group6_srccode\Group6_srccode\src\atm_fingerprint\ && javac ATMmain.java && java ATMmain
 
 workflows:
-  verify: 
+  build_and_test:
     jobs:
-      - maven/test:
-          executor: openjdk11
-          pre-steps:
-            - run:
-                name: Install dockerize
-                command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-                environment:
-                  DOCKERIZE_VERSION: v0.6.1
-            - run:
-                name: Wait for db
-                command: dockerize -wait tcp://localhost:5432 -timeout 1m
+      - build
+      - test:
+          requires:
+            - build
